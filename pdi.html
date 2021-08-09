@@ -1,0 +1,138 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>ETL Project</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			img {
+			  border: 1px solid #555;
+			}
+			</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Click Home</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="pdi.html">Overview</a></li>
+							<li><a href="pdi_ref.html">References</a></li>
+						</ul> <!--
+						<ul class="icons">
+							<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+							<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+							<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+						</ul>-->
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<h1>ETL Overview</h1>
+									<h2 style="font-size: 20px;">Credit card manufacturer job change data integration using Pentaho</h2>
+								</header>
+								<div class="image main"><img src="images\pdi_overview.PNG" alt="" style="border: 0;"/>
+								<figcaption><i>Figure 1: ETL Overview</i></figcaption>
+								</div>
+
+								<p>The data flow shown above is an overview of a credit card manufacturer's job change data integration. When the credit card company finalizes a new job contract, it is added to the job fact table in the data warehouse. In addition, the lead fact table is updated, and all data validation errors are logged. Figure 2, shown below, is the ETL process in its entirety.</p>
+								<div class="image main"><img src="images\pdi_full_view.PNG" alt="" style="border:0" />
+								<figcaption><i>Figure 2: Job change data integration</i></figcaption>
+								</div>
+								
+								<p>The data flow below, figure 3, starts with a connection to our change data table, table 1. All rows with null values are filtered out and recorded in the error log table, table 2. For all logged errors, a database sequence generates the log_id. Next, a string is added to specify the error, and then the error log is inserted into the table in the data warehouse.</p>
+								<p>Next, each date in the change data is split by year, month and day, and checked for validity against the time table. All rows with non-valid dates are filtered out and recorded in the error log. The validation process is shown in figure 3, and the error log entry is shown in figure 5.</p>
+								<p>The date filter, figure 3, checks that the promise date is between 14 and 30 days after the contract date and that the promise is between 2 and 7 days after the ship date. All rows that do not meet this validation are removed and recorded in the error log.</p>
+								
+								<div class="image main"><img src="images\pdi_dates.PNG" alt="" style="border: 0;"/>
+								<figcaption><i>Figure 3: Connect change data, validate dates</i></figcaption>
+								</div>
+								<div class="image main"><img src="images\change_data_table.PNG" alt="" style="border: 0;"/>
+								<figcaption><i>Table 1: Job Change Data Table</i></figcaption>
+								</div>
+								<div class="image main"><img src="images\error_log.PNG" alt="" style="border: 0;"/>
+								<figcaption><i>Table 2: error log</i></figcaption>
+								</div>
+								<div class="image main"><img src="images\pdi_fk_checks.PNG" alt="" style="border: 0;"/>
+								<figcaption><i>Figure 4: FK id validation</i></figcaption>
+								</div>
+
+								<p>Figure 4, shown above, represents the foreign key validation of all dimension table IDs in the change data. All non-valid IDs are recorded in the error log, figure 5.
+									Figure 5: FK and date error logs</p>
+								
+								<div class="image main"><img src="images\pdi_fk_date_filters.PNG" alt="" style="width: 60%;height: 60%;border: 0;" />
+								<figcaption><i>Figure 5: FK and date error logs</i></figcaption>
+								</div>
+								
+								<p>In figure 6, the job_id is created with a database sequence, and the valid change data is inserted into the job fact table. Then a column "success" is created with the value "Y." The lead data is validated and confirmed to be less than the contract date, else it is put into the error log. Lastly, the lead fact table is updated.</p>
+
+								<div class="image main"><img src="images\pdi_insert_job_update_lead.PNG" alt="" style="border: 0;" />
+								<figcaption><i>Figure 6: Insert into job fact, update lead fact</i></figcaption>
+								</div>
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+				<footer id="footer">
+
+					<section class="split contact">
+						<section class="alt">
+							<h3>Address</h3>
+							<p>Yuba County, CA</p>
+						</section>
+						<section>
+							<h3>Phone</h3>
+							<p><a href="#">(619) 201-5824</a></p>
+						</section>
+						<section>
+							<h3>Email</h3>
+							<p><a href="#">eric@ericranger.com</a></p>
+						</section>
+						<section>
+							<h3>Social</h3>
+							<ul class="icons alt">
+								<li><a href="https://www.linkedin.com/in/eranger/" target="_blank" class="icon brands alt fa-linkedin"><span class="label">LinkedIn</span></a></li>
+								<li><a href="https://github.com/Eric-Ranger" target="_blank" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+					</section>
+				</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

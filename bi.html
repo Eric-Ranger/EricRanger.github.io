@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Business Dashobards Overview</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			img {
+			  border: 1px solid #555;
+			}
+			</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Click Home</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="bi.html">Overview</a></li>
+							<li><a href="bi_extras.html">Extras</a></li>
+							<li><a href="bi_ref.html">References</a></li>
+						</ul> <!--
+						<ul class="icons">
+							<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+							<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+							<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+						</ul>-->
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<h1>Business Performance Dashboards Overview</h1>
+								</header>
+								<p>This BI has six dashboards: Job Quality and Lead Success, Production and Shipment Delays, Invoice Trends, Sales Performance, Cost Performance, and Returns TreeMap. It uses various dimensions to analyze each dashboard's primary attributes, including manufacturing location, sales class, month, year, machine model, and sales agent.</p>
+								<p>Power BI Server is equipped with a dashboard for trend monitoring, including all charted metrics tracked over time, row-level security by manufacturing region, which is assignable to users, and scheduled refreshes through an ODBC connection. Further details are on the extras page and an ERD diagram.</p>
+								<br>
+								
+
+
+								<p style="font-size: 120%;"><b>Job Quantity and Lead Success</b></p>
+								<p>The dashboard, shown in figure 1, tracks job quantity by facility location and sales class and lead success by facility location and sales agent. It utilizes the Job and Lead fact tables. </p>
+								<p>The top left visualization in figure 2 shows credit card quantities ordered by customers for each location by bubble size, which allows the user to identify unit volume ratios by manufacturing location. Below on the bottom left is a trend analysis of quantity ordered over time which is filterable by location or sales class by selecting dimensions on the other visuals.</p>
+								<p>The table in the upper right corner represents unit quantity sold by sales agents based on location. It also provides a success rate, defined as jobs finalized/total leads given. The success rate for sales agents seems to be very high in Toronto, and other locations have similar success rates.</p>
+								<div class="image main"><center><img src="images\bi\job_rev_lead.PNG" alt="" style="width: 100%;height: 100%;" /></center>
+								<br>
+									<figcaption><i>Figure 1: Job Quantity and Lead Success Dashboard</i></figcaption>
+								</div>
+
+								<p style="font-size: 120%;"><b>Production and Shipment Delays</b></p>
+								<p>Figure 2 shows a dashboard that tracks two quality control metrics, delay days of shipments and delay days of production start. The company defines shipment delays as orders that ship after the agreed shipment date. They define late production starts as production start dates that are more than 20 business days after the contract date. This dashboard taps two analytical views I wrote to return late shipment quantities and day count and for late production days. Link to these views link 1 and link 2.</p>
+								<p>The upper left table shows a table that tracks quantity shipped late and total delay days of late shipments by location. The heat map helps differentiate locations by late shipment quantities. For example, Vancouver, Montreal, and Seattle are a darker red and have a higher quantity level than the other locations.</p>
+								<p>The table on the bottom left shows a count of total production delay days by location. The line chart on the upper right shows shipment delay trends over time by sales class. For example, prepaid No Smart cards were trending up all year in 2014.</p>
+								<p>The chart on the bottom right tracks the correlation between late production starts and late shipments by location. The chart shows a strong correlation, thus starting a job on time is a leading indicator for shipping orders on time.</p>
+								<div class="image main"><center><img src="images\bi\prod_ship.PNG" alt="" style="width: 100%;height: 100%;" /></center>
+								<br>
+									<figcaption><i>Figure 2: Production and Shipment Delays Dashboard</i></figcaption>
+								</div>
+
+								
+								<p style="font-size: 120%;"><b>Invoice Trends</b></p>
+								<p>The dashboard shown in figure 3 tracks invoice amounts by sales class and location. It uses the invoice fact table and several dimension tables.</p>
+								<p>The graph on the bottom right shows a trend analysis for invoice amounts over time by sales class. Credit Smart cards saw significant growth, Debit Smart cards are somewhat unstable, and the rest of the classes held steady.</p>
+								<p>The bar graph represents the totals for each sales class. Furthermore, the top visualization breaks down invoice amounts by location and sales class.</p>
+								<div class="image main"><center><img src="images\bi\invoice_amt.PNG" alt="" style="width: 100%;height: 100%;" /></center>
+								<br>
+									<figcaption><i>Figure 3: Invoice Trends Dashboard</i></figcaption>
+								</div>
+
+								
+								<p style="font-size: 120%;"><b>Sales Performance</b></p>
+								<p>Figure 4 represents a sales performance dashboard connected to the financial sales fact table and several dimension tables. The financial numbers are finalized by accounting and provide the best insight into company revenue.</p>
+								<p>The bottom graph compares actual sales to forecasted sales by sales class. The upper left map represents sales amount by location. The upper right table provides calculations for forecast accuracy.</p>
+								<p>This dashboard makes it easy to see that all sales classes are well under the forecasted sales, but that is odd because the sales agent success rate for leads is very high. Either the forecasts are too high, or the sales team is not getting the company's share of the market. I would recommend revisiting forecasting methods, and the sales teams lead chasing process to determine the root cause of unmet forecast values.</p>
+								<div class="image main"><center><img src="images\bi\sales.PNG" alt="" style="width: 100%;height: 100%;" /></center>
+								<br>
+									<figcaption><i>Figure 4: Sales Performance Dashboard</i></figcaption>
+								</div>
+
+								
+								<p style="font-size: 120%;"><b>Cost Performance</b></p>
+								<p>The cost performance dashboard, figure 5, uses the accountings financial cost table to track and compare job cost to the budget. In addition, the cost fact table and several dimension tables are utilized by this dashboard.</p>
+								<p>The bar graph on top stacks labor, machine, material, and overhead cost and compares it to the total budget over time. The table on the right gives budget vs. actual cost performance numbers. Finally, the scatter plot on the bottom compares machine cost to materials cost for specific machines, thus clarifying which machines are the most expensive.</p>
+								<p>
+									Overall, the budget almost doubles the actual cost. An understanding of why the cost is gradually rising throughout the year is needed. I that the company considers lowering the budget. Further, machine model 1 has the highest materials and machine cost, and it should be determined if this is expected or if machine model 1 has an issue.</p>
+								<div class="image main"><center><img src="images\bi\cost.PNG" alt="" style="width: 100%;height: 100%;" /></center>
+								<br>
+									<figcaption><i>Figure 5: Cost Performance Dashboard</i></figcaption>
+								</div>
+
+								
+								<p style="font-size: 120%;"><b>Returns</b></p>
+								<p>Figure 6 shows a treemap that tracks the return amount in dollars. The goal here is to find the highest sources of returns. This map leads to machine models 203 and 202 in Los Angeles if the user follows the highest values. These models are making Debit Smart Cards. There are many different paths to finding quality control issues with this treemap.</p>
+								<div class="image main"><center><img src="images\bi\tree_map.PNG" alt="" style="width: 100%;height: 100%;" /></center>
+								<br>
+									<figcaption><i>Figure 6: Returns Tree Map</i></figcaption>
+								</div>
+
+								
+								<p style="font-size: 120%;"><b>Trend Monitoring Dashboard</b></p>
+								<p>Figure 7 shows a dashboard build in the Power BI Server. It is a fundamental way to monitor trends for any issues. For example, the top left tile shows a negative trend in job quantity ordered, which raises the alarm for a deeper dive into this issue. Click on the tile, and the Job Quantity Ordered dashboard will open.</p>
+								<div class="image main"><center><img src="images\bi\dashboard.PNG" alt="" style="width: 100%;height: 100%;" /></center>
+								<br>
+									<figcaption><i>Figure 7: Trend Monitoring Dashboard</i></figcaption>
+								</div>
+
+								<br>
+								<p>See extras page for row level security, auto update, and modeling information.</p>
+	
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+				<footer id="footer">
+
+					<section class="split contact">
+						<section class="alt">
+							<h3>Address</h3>
+							<p>Yuba County, CA</p>
+						</section>
+						<section>
+							<h3>Phone</h3>
+							<p><a href="#">(619) 201-5824</a></p>
+						</section>
+						<section>
+							<h3>Email</h3>
+							<p><a href="#">eric@ericranger.com</a></p>
+						</section>
+						<section>
+							<h3>Social</h3>
+							<ul class="icons alt">
+								<li><a href="https://www.linkedin.com/in/eranger/" target="_blank" class="icon brands alt fa-linkedin"><span class="label">LinkedIn</span></a></li>
+								<li><a href="https://github.com/Eric-Ranger" target="_blank" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+					</section>
+				</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

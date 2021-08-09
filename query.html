@@ -1,0 +1,195 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Query Project</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			img {
+			  border: 1px solid #555;
+			}
+			</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Click Home</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="query.html">Overview</a></li>
+							<li><a href="query_code.html">Code</a></li>
+							<li><a href="query_ref.html">References</a></li>
+						</ul> <!--
+						<ul class="icons">
+							<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+							<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+							<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+						</ul>-->
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<h1>Analytical Queries Overview</h1>
+								</header>
+								<p style="font-size: 120%;"><b>Business Intelligence Deliverables</b></p>
+								<p>These queries track and compare sales and cost over time. Sales tracked by location and sales class. Cost tracked by location, sales class, and split into labor, material, machine, and overhead costs. Calculate profit combining sales and cost tracked by sales class and location.</p>
+								<p>Quality control for performance and manufacturing quality tracks returns by location, sales class, and machine model and shipment delays by sales class and machine cost.</p>
+
+
+								<br>
+								<p style="font-size: 120%;"><b>Query Workflow</b></p>
+								<p>The workflow below represents all seven base queries and twelve analytical queries and there relationships.</p>
+								<div class="image main"><center><img src="images\Query_Flow.png" alt="" style="width: 100%;height: 100%;border:0" /></center>
+								<br>
+									<figcaption><i>Figure 1: Query Flow Overview</i></figcaption>
+								</div>
+
+								<p style="font-size: 120%;"><b>Base Queries</b></p>
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_1.sql" target="_blank">BQ1</a> - Location name / sales class for job quantity and amount</p>
+								<p style="margin-left:10%;">Aggregates the sum of the quantity ordered and the sum of job amount(unit price * quantity ordered) from the job fact table. Attribute rows include location name, sales class, contract year, contract month, and base price. View Created.</p>
+								
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/base_query_2.sql" target="_blank">BQ2</a> - Location invoice revenue summary</p>
+								<p style="margin-left:10%;">Aggregates the sum of invoice amount and sum of invoice quantity from the invoice fact table. Attributes include job id, location name, unit price, quantity ordered, contract year, contract month. Created view invoice_revenue_summary.</p>
+								
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/base_query_3.sql" target="_blank">BQ3</a> - Location subjob cost summary </p>
+								<p style="margin-left:10%;">Aggregates sum of labor cost, material cost, machine cost (machine hours * rate per hour), overhead cost, total cost (sum all cost), quantity produced, unit cost (total cost/ quantity produced) from subjob fact table. Attributes include job id, location name, contract year, contract month. Created view location_subjob_cost_summary.</p>
+								
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/base_query_4.sql" target="_blank">BQ4</a> - Returns by location, machine model, and sales class</p>
+								<p style="margin-left:10%;">Aggregates the sum of quantity returned (quantity shipped – invoice quantity) and the sum of the dollar amount of returns (invoice amount/invoice quantity * quantity returned) from the invoice fact table. Attributes include location name, sales class, machine model, invoice year, invoice month. Created view invoice_returns.</p>		
+								
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/base_query_5.sql" target="_blank">BQ5</a> - Last shipment delays involving date promised</p>
+								<p style="margin-left:10%;">Subquery aggregates the actual amount and max ship date of late shipments from the subjob fact table. The main query calculates how many days a shipment is late. Attributes include job id, sales class, location name. Created view last_ship_delays. Query and sample output is shown below in Figure 2 and Table 1.</p>							
+							
+								<div class="image main"><img src="images\bq5_sql.PNG" alt="" style="width: 100%;height: 100%;border: 0;"/>
+									<figcaption><i>Figure 2: SQL query BQ5</i></figcaption>
+									</div>
+									<div class="image main"><img src="images\bq5.PNG" alt="" style="width: 100%;height: 100%;border: 0;"/>
+									<figcaption><i>Table 1: BQ5 sample output</i></figcaption>
+								</div>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/base_query_6.sql" target="_blank">BQ6</a> - First shipment delays involving shipped by date </p>
+								<p style="margin-left:10%;">Like BQ5, except for the subquery calculates minimum ship date. The main query returns the difference between the first shipment date and ship by date, or how many days the first shipment was late.  Attributes include job id, location name, sales class. Created view first_shipment_delays_shipping.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/base_query_7.sql" target="_blank">BQ7</a> - Days from contract date to production start</p>
+								<p style="margin-left:10%;">This query returns the jobs with more than 20 business days between the jobs contract date and the first day of production, and the number of business days. Attributes include job id, location name, sales class, contract date. Created view delay_till_prod.</p>
+
+								<br>
+								<p style="font-size: 120%;"><b>Analytical Queries</b></p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_1.sql" target="_blank">AQ1</a> - Cumulative sum for job amount by Location</p>
+								<p style="margin-left:10%;">Provides cumulative sum of job amount (unit_price *quantity ordered). It is partitioned by location name, contract year and ordered by contract month.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_2.sql" target="_blank">AQ2</a> - Moving average of job amount by location</p>
+								<p style="margin-left:10%;">Provides a moving average of job amount (unit_price *quantity ordered) for preceding 11 and current row. Partitioned by location name and ordered by contract year, contract month.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_3.sql" target="_blank">AQ3</a> - Profit Rank by location – uses BQ2 and BQ3 views</p>
+								<p style="margin-left:10%;">Returns profit (invoice amount – total job cost) and rank partitioned by location name and year. Uses views BQ2 and BQ3.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_4.sql" target="_blank">AQ4</a> - Profit Margin Rank by location </p>
+								<p style="margin-left:10%;">This query provides profit margin (invoice amount – total job cost/invoice amount) and rank. It is partitioned by year. It uses views BQ2 and BQ3. Created view profit_margin_rank.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_5.sql" target="_blank">AQ5</a> - Profit Margin Percent Rank by location</p>
+								<p style="margin-left:10%;">This query provides profit margin (invoice amount – total job cost/invoice amount) and percent rank. Attributes include job id, location name, contract year. Uses views BQ2 and BQ3.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_6.sql" target="_blank">AQ6</a> - Profit margin Top 5% Performers percent rank by location</p>
+								<p style="margin-left:10%;">This query uses the AQ4 view to calculate the percent rank based on profit margin. Query and sample output is shown below in Figure 3 and Table 2.</p>
+
+								<div class="image main"><img src="images\aq6.PNG" alt="" style="width: 100%;height: 100%;border: 0;"/>
+									<figcaption><i>Figure 3: SQL query AQ6</i></figcaption>
+									</div>
+									<div class="image main"><img src="images\aq6_output.PNG" alt="" style="width: 100%;height: 100%;border: 0;"/>
+									<figcaption><i>Table 2: AQ6 output</i></figcaption>
+								</div>
+								
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_7.sql" target="_blank">AQ7</a> - Rank quantity returned by sales class</p>
+								<p style="margin-left:10%;">Extends BQ4, provides quantity returned by sales class, rank partitioned by year.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_8.sql" target="_blank">AQ8</a> - Return ratio by sales class</p>
+								<p style="margin-left:10%;">Extends BQ4, this query contains two subqueries. One provides the total quantity returned by year. The other provides the total quantity returned by year and sales class. The main query calculates the ratio of total returns by sales class and year. Query and sample output is shown below in Figure 4 and Table 2.</p>
+
+								<div class="image main"><img src="images\aq8.PNG" alt="" style="width: 100%;height: 100%;border: 0;"/>
+									<figcaption><i>Figure 4: AQ8 SQL query</i></figcaption>
+									</div>
+									<div class="image main"><img src="images\aq8_output.PNG" alt="" style="width: 100%;height: 100%;border: 0;"/>
+									<figcaption><i>Table 3: AQ3 output</i></figcaption>
+								</div>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_9.sql" target="_blank">AQ9</a> - Rank location by sum of business day shipment delays for first ship date</p>
+								<p style="margin-left:10%;">This query uses BQ6 to return location rank based on the sum of shipment delays as the difference between the first ship date and ship by date. It is partitioned by shipment year.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_10.sql" target="_blank">AQ10</a> - Rank locations by delay rate for last ship date</p>
+								<p style="margin-left:10%;">Uses BQ5 to ranks last shipment delays by delay rate (quantity returned/quantity ordered). Partitioned by year.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_11.sql" target="_blank">AQ11</a> - Rank Location by sum quantity late</p>
+								<p style="margin-left:10%;">Uses BQ5 to rank location by total quantity shipped late. It is partitioned by year and includes the count of jobs delayed and the sum of shipments delayed.</p>
+
+								<p><a href="https://github.com/Eric-Ranger/SQL_Query_Analysis/blob/main/analytical_query_12.sql" target="_blank">AQ12</a> - Rank Location by days from contract to production</p>
+								<p style="margin-left:10%;">Uses BQ7 to rank location by the sum of days till production starts. Partitioned by year. Created view rank_days_prod.</p>
+
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+				<footer id="footer">
+
+					<section class="split contact">
+						<section class="alt">
+							<h3>Address</h3>
+							<p>Yuba County, CA</p>
+						</section>
+						<section>
+							<h3>Phone</h3>
+							<p><a href="#">(619) 201-5824</a></p>
+						</section>
+						<section>
+							<h3>Email</h3>
+							<p><a href="#">eric@ericranger.com</a></p>
+						</section>
+						<section>
+							<h3>Social</h3>
+							<ul class="icons alt">
+								<li><a href="https://www.linkedin.com/in/eranger/" target="_blank" class="icon brands alt fa-linkedin"><span class="label">LinkedIn</span></a></li>
+								<li><a href="https://github.com/Eric-Ranger" target="_blank" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+					</section>
+				</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
