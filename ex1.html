@@ -1,0 +1,269 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal AND commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Query Samples</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/prism.css" rel="stylesheet" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			img {
+			  border: 1px solid #555;
+			}
+			pre, code {
+  font-family: monospace, monospace;
+}
+
+			</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="code.html" class="logo">Back to Code</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="ex1.html">Example 1</a></li>
+							<li><a href="ex2.html">Example 2</a></li>
+							<li><a href="ex3.html">Example 3</a></li>
+						</ul> <!--
+						<ul class="icons">
+							<li><a href="#" class="icon brANDs fa-twitter"><span class="label">Twitter</span></a></li>
+							<li><a href="#" class="icon brANDs fa-facebook-f"><span class="label">Facebook</span></a></li>
+							<li><a href="#" class="icon brANDs fa-instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="#" class="icon brANDs fa-github"><span class="label">GitHub</span></a></li>
+						</ul>-->
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<h1>SQL Example 1</h1>
+								</header>
+
+								<p style="font-size: 120%;"><b>Non Confidential Civil Complaints</b></p>
+						
+								<figure>
+									<figcaption>This query is identifing civil complaints filed electronically that are legally availble to the public. It uses tables from three databases and one external
+										excel file uploaded to a databases.
+									</figcaption>
+									<pre><code class="language-sql">
+USE Operations;
+
+--Temp Table WITH OFS
+IF OBJECT_ID('tempdb..#ofs') IS NOT NULL BEGIN DROP TABLE #ofs END
+
+--fill ofs temp table
+SELECT 
+	Location
+	,EFSPName
+	,CaseNumber
+	,CaseCategory
+	,CaseTypeDesc
+	,OrderNumber
+	,EnvelopeID
+	,FilingID
+	,FilingType
+	,FilingCodeDescription
+	,FilingCode
+	,RejectCode
+	,RejectComment
+	,FirmName
+	,FilerEmail
+	,FilerFirstName
+	,FilerLastName
+	,Status
+	,DD2.Date AS ReviewedDate
+	,ReviewerEmail
+	,ReviewerFirstName
+	,ReviewerLastName
+	,DD.Date As SubmittedDate
+	,NLR.CountyNum
+	,NLR.County
+INTO #ofs
+FROM [OdyReporting].[Report].[OFSReporting] OFS
+	LEFT JOIN OdyReporting.dbo.NodeListReporting NLR ON OFS.Location = NLR.OrgUnitName
+	LEFT JOIN OdyReporting.Shared.DateDim DD ON OFS.DateSubmittedKey = DD.DateKey
+	LEFT JOIN OdyReporting.Shared.DateDim DD2 ON OFS.DateReviewKey = DD2.DateKey
+ WHERE 
+ 	CaseCategory = 'Civil'
+  		AND 
+  	--filter to just complaints
+	(FilingCodeDescription LIKE '%complaint%' 
+		AND FilingCodeDescription NOT LIKE '%Amended%' 
+		AND FilingCodeDescription NOT LIKE '%Motion%'
+		AND FilingCodeDescription NOT LIKE '%Answer%');
+
+--cte combining document information AND creating preference rank for case number link
+WITH doc AS (
+SELECT Distinct
+	D.DocumentID
+	,D.DocumentTypeID
+	,D.Name
+	,D.Description
+	,D.TimestampCreate
+	,Case 
+		When D.TimestampChange is Null then D.TimestampCreate
+		Else D.TimestampChange
+	End AS TimeStamp
+	,D.DocumentOrigMethodID
+	,D.SecurityToken
+	,D.OriginatingDocumentID
+	,DV.DocumentVersionID
+	,DV.EffectiveDate
+	,DV.DocumentSecurityGroupID
+	,DSC.NotForPublicView
+	,SecC.Code SecGrpCode
+	,SecC.Description SecGrpDes
+	,DocC.Code DocTypeCode
+	,DocC.Description DocTypeDes
+	,PL.ParentTypeID
+	,PL.ParentID
+	,SPT.Description parentType
+	,Case When PL.ParentTypeID  = 1 Then 1
+		When PL.ParentTypeID = 2 Then 2
+		When PL.ParentTypeID = 3 Then 3
+		When PL.ParentTypeID = 4 then 4
+		Else 5
+	End AS Likerate
+FROM dbo.Doc D
+	LEFT JOIN dbo.DocVersion DV ON D.DocumentID = DV.DocumentID
+	LEFT JOIN dbo.uDocSecGrp DSC ON DV.DocumentSecurityGroupID = DSC.DocumentSecurityGroupID
+	LEFT JOIN dbo.uCode SecC ON DV.DocumentSecurityGroupID = SecC.CodeID
+	LEFT JOIN dbo.uCode DocC ON D.DocumentTypeID = DocC.CodeID
+	LEFT JOIN dbo.ParentLink PL ON D.DocumentID = PL.DocumentID
+	LEFT JOIN Operations.dbo.sParentType sPT ON PL.ParentTypeID = SPT.ParentTypeID
+WHERE 
+	
+			--filter to just complaints
+	Name LIKE '%complaint%' 
+	AND Name NOT LIKE '%Amended%' 
+	AND Name NOT LIKE '%Motion%'
+	AND Name NOT LIKE '%Answer%'
+	AND Name NOT LIKE 'Summons%'
+	AND Name NOT LIKE '%Affidavit%'
+	AND D.TimestampCreate > '2016-01-01'
+),
+
+--cte pulling in case number AND row_number() ranking based on previous preference rank
+DocCase AS (
+SELECT 
+	d.*
+	,CAHsub.CaseNbr As CaseNumber
+	,CAHsub.CountyNum
+
+	,ROW_NUMBER() Over(Partition By d.DocumentID Order By d.LIKErate) AS RankCaseID -- rank by prefered link method
+FROM doc d
+
+	LEFT JOIN (
+		SELECT 
+			CAH.CaseID
+			,CAH.CaseNbr
+			,NLR.CountyNum
+		FROM Justice.dbo.CaseAssignHist CAH
+			JOIN OdyReporting.dbo.NodeListReporting NLR ON CAH.NodeID = NLR.NodeID
+			) CAHsub ON d.parentID = CAHsub.caseID AND d.ParentTypeID = 1 
+	)
+--combining OFS temp table WITH final DocCase cte
+--joining on CaseNumber for perfered link types AND e files WITH status accepted 
+
+SELECT Distinct
+	ofs.CaseNumber
+	,CaseCategory
+	,Location
+	,ofs.FilingID
+	,ofs.FilingCodeDescription
+	,dc.Name As DocDesc
+	,ofs.FilingType
+	,ofs.FilerLastName
+	,ofs.FilerFirstName
+	,ofs.FilerEmail
+	,dc.DocumentID
+	,ofs.Status
+	,ofs.ReviewerLastName
+	,ofs.ReviewerFirstName
+	,ofs.ReviewerEmail
+	,ofs.SubmittedDate
+	,ofs.ReviewedDate
+	,dc.TimestampCreate TimestampCreateDoc
+	,Cast(dc.EffectiveDate as Date) As EffectiveDate
+	,dc.NotForPublicView
+	,DATEDIFF(DAY,SubmittedDate,TimestampCreate) As DaysSumbitedToPublic --Calculate hour/24 till timestampcreated
+
+FROM #ofs ofs 
+	LEFT JOIN DocCase dc ON ofs.CaseNumber = dc.CaseNumber AND Status = 'Accepted' 
+														   AND ofs.CountyNum = dc.CountyNum
+
+WHERE  
+	(NotForPublicView = 0
+		AND (Cast(ofs.ReviewedDate As date) <= Cast(dc.TimestampCreate As date)
+		AND Cast(ofs.SubmittedDate As date) = Cast(dc.EffectiveDate As date)))
+		OR Status = 'Rejected'
+ORDER BY
+	reviewedDate ASC
+										</code>
+									</pre>
+								</figure>
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+				<footer id="footer">
+
+					<section class="split contact">
+						<section class="alt">
+							<h3>Address</h3>
+							<p>Ada County, ID</p>
+						</section>
+						<section>
+							<h3>Phone</h3>
+							<p><a href="#">(619) 201-5824</a></p>
+						</section>
+						<section>
+							<h3>Email</h3>
+							<p><a href="#">eric@ericranger.com</a></p>
+						</section>
+						<section>
+							<h3>Social</h3>
+							<ul class="icons alt">
+								<li><a href="https://www.linkedin.com/in/eranger/" target="_blank" class="icon brANDs alt fa-linkedin"><span class="label">LinkedIn</span></a></li>
+								<li><a href="https://github.com/Eric-Ranger" target="_blank" class="icon brANDs alt fa-github"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+					</section>
+				</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/prism.js"></script>
+
+	</body>
+</html>
