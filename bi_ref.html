@@ -10,7 +10,14 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/prism.css" rel="stylesheet" />		
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			pre, code {
+  font-family: monospace, monospace;
+}
+
+			</style>
 	</head>
 	<body class="is-preload">
 
@@ -26,8 +33,8 @@
 				<nav id="nav">
 					<ul class="links">
 						<li><a href="bi.html">Overview</a></li>
-						<li><a href="bi_extras.html">Extras</a></li>
-						<li class="active"><a href="bi_ref.html">References</a></li>
+						<li class="active"><a href="bi_ref.html">SQL Queries</a></li>
+						<li><a href="bi_extras.html">ER Diagram</a></li>
 						</ul> <!--
 						<ul class="icons">
 							<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
@@ -43,17 +50,147 @@
 						<!-- Post -->
 						<section class="post">
 							<header class="major">
-								<h1>Business Performance Dashboards References</h1>
+								<h1>Business Performance Dashboard SQL</h1>
 							</header>
-							<p>Data </p>
-							<p style="margin-left:5%;">Coursera Specialization: Data Warehousing for Business Intelligence Specialization</p>
-							<br>
-							<p>Database: PostgreSQL</p>
-							<p style="margin-left:5%;">Link: <a href="hhttps://www.postgresql.org/" target="_blank">https://www.postgresql.org</a></p>
-							<br>
-							<p>Business Intelligence Tool: Microsoft Power BI</p>
-							<p style="margin-left:5%;">Link: <a href="https://powerbi.microsoft.com/en-us/" target="_blank">https://powerbi.microsoft.com/en-us/</a></p>
 
+							<p style="font-size: 120%;"><b>Cost Performance Query</b></p>
+						
+							<figure>
+								<figcaption>This query calculates actual and budgeted manufacturing costs for labor, machine, material, and overhead. To calculate the budget, a cost per unit must be established and multiplied by the actual units manufactured. Two CTEs unpivot the budget and actual cost to simply visualization channels.
+								</figcaption>
+								<pre><code class="language-sql">
+IF OBJECT_ID('tempdb..#total') IS NOT NULL BEGIN DROP TABLE #total END;
+
+WITH rate AS (
+SELECT 
+	fsc.*
+	,t.TIME_MONTH AS ReportEndMonth
+	,t.TIME_YEAR +6 AS ReportEndYear
+	,sc.SALES_CLASS_DESC
+	,l.LOCATION_NAME
+	,mt.MANUFACTURER
+	,mt.MACHINE_MODEL
+	,fsc.ACTUAL_LABOR_COST/ACTUAL_UNITS AS ActualLaborRate
+	,fsc.ACTUAL_MACHINE_COST/ACTUAL_UNITS AS ActualMachineRate
+	,fsc.ACTUAL_MATERIAL_COST/ACTUAL_UNITS AS ActualMaterialRate
+	,fsc.ACTUAL_OVERHEAD_COST/ACTUAL_UNITS AS ActualOverheadRate
+	,fsc.BUDGET_LABOR_COST/BUDGET_UNITS AS BudgetLaborRate
+	,fsc.BUDGET_MACHINE_COST/BUDGET_UNITS AS BudgetMachineRate
+	,fsc.BUDGET_MATERIAL_COST/BUDGET_UNITS AS BudgetMaterialRate
+	,fsc.BUDGET_OVERHEAD_COST/BUDGET_UNITS AS BudgetOverheadRate
+FROM W_FINANCIAL_SUMMARY_COST_F fsc
+	Join W_TIME_D t ON fsc.REPORT_END_DATE_ID = t.TIME_ID
+	Join W_SALES_CLASS_D sc ON sc.SALES_CLASS_ID = fsc.SALES_CLASS_ID
+	Join W_LOCATION_D l ON l.LOCATION_ID = fsc.LOCATION_ID
+	Join W_MACHINE_TYPE_D mt ON mt.MACHINE_TYPE_ID = fsc.MACHINE_TYPE_ID
+WHERE
+	fsc.ACTUAL_UNITS <> 0)
+
+SELECT 
+	*
+	,ActualLaborRate+ActualMachineRate+ActualMaterialRate+ActualOverheadRate AS TotalActualRate
+	,BudgetLaborRate+BudgetMachineRate+BudgetMaterialRate+BudgetOverheadRate AS TotalBudgetRate
+	,BudgetLaborRate * ACTUAL_UNITS AS BudgetCostLabor
+	,BudgetMachineRate * ACTUAL_UNITS AS BudgetCostMachine
+	,BudgetMaterialRate * ACTUAL_UNITS AS BudgetCostMaterial
+	,BudgetOverheadRate * ACTUAL_UNITS AS BudgetCostOverhead
+INTO #total
+FROM rate;
+
+WITH budget AS (
+SELECT
+	FINANCIAL_SUMMARY_COST_ID
+	,reportEndMonth
+	,ReportEndYear
+	,SALES_CLASS_DESC
+	,LOCATION_NAME
+	,MANUFACTURER
+	,MACHINE_MODEL
+	,Cost_Type
+	,Cost
+	,CASE
+		WHEN Cost_Type LIKE '%Labor%' THEN 'Labor'
+		WHEN Cost_Type LIKE '%Machine%' THEN 'Machine'
+		WHEN Cost_Type LIKE '%Material%' THEN 'Material'
+		WHEN Cost_Type LIKE '%Overhead%' THEN 'Overhead'
+	End As BaseCost
+FROM 
+	(SELECT Cast(FINANCIAL_SUMMARY_COST_ID As NVARCHAR(MAX)) As FINANCIAL_SUMMARY_COST_ID
+			,CAST(ReportEndMonth As NVARCHAR(MAX)) As ReportEndMonth
+			,CAST(ReportEndYear As NVARCHAR(MAX)) As ReportEndYear
+			,CAST(SALES_CLASS_DESC As NVARCHAR(MAX)) As SALES_CLASS_DESC
+			,CAST(LOCATION_NAME As NVARCHAR(MAX)) As LOCATION_NAME
+			,CAST(MANUFACTURER As NVARCHAR(MAX)) As MANUFACTURER
+			,CAST(MACHINE_MODEL As NVARCHAR(MAX)) As MACHINE_MODEL
+			,Cast(BudgetCostLabor As NVARCHAR(MAX)) As BudgetCostLabor
+			,Cast(BudgetCostMachine As NVARCHAR(MAX)) As BudgetCostMachine
+			,Cast(BudgetCostMaterial As NVARCHAR(MAX)) As BudgetCostMaterial
+			,Cast(BudgetCostOverhead As NVARCHAR(MAX)) As BudgetCostOverhead
+		FROM #total) p
+	UNPIVOT
+		(Cost FOR Cost_Type IN
+			(BudgetCostLabor
+			,BudgetCostMachine
+			,BudgetCostMaterial
+			,BudgetCostOverhead)
+			)As upvt),
+
+actual As(
+SELECT
+	FINANCIAL_SUMMARY_COST_ID
+	,reportEndMonth
+	,ReportEndYear
+	,SALES_CLASS_DESC
+	,LOCATION_NAME
+	,MANUFACTURER
+	,MACHINE_MODEL
+	,Cost_Type
+	,Cost
+	,CASE
+		WHEN Cost_Type LIKE '%Labor%' THEN 'Labor'
+		WHEN Cost_Type LIKE '%Machine%' THEN 'Machine'
+		WHEN Cost_Type LIKE '%Material%' THEN 'Material'
+		WHEN Cost_Type LIKE '%Overhead%' THEN 'Overhead'
+	End As BaseCost
+FROM 
+	(SELECT Cast(FINANCIAL_SUMMARY_COST_ID As NVARCHAR(MAX)) As FINANCIAL_SUMMARY_COST_ID
+			,CAST(ReportEndMonth As NVARCHAR(MAX)) As ReportEndMonth
+			,CAST(ReportEndYear As NVARCHAR(MAX)) As ReportEndYear
+			,CAST(SALES_CLASS_DESC As NVARCHAR(MAX)) As SALES_CLASS_DESC
+			,CAST(LOCATION_NAME As NVARCHAR(MAX)) As LOCATION_NAME
+			,CAST(MANUFACTURER As NVARCHAR(MAX)) As MANUFACTURER
+			,CAST(MACHINE_MODEL As NVARCHAR(MAX)) As MACHINE_MODEL
+			,Cast(ACTUAL_LABOR_COST As NVARCHAR(MAX)) As ACTUAL_LABOR_COST
+			,Cast(ACTUAL_MACHINE_COST As NVARCHAR(MAX)) As ACTUAL_MACHINE_COST
+			,Cast(ACTUAL_MATERIAL_COST As NVARCHAR(MAX)) As ACTUAL_MATERIAL_COST
+			,Cast(ACTUAL_OVERHEAD_COST As NVARCHAR(MAX)) As ACTUAL_OVERHEAD_COST
+		FROM #total) p
+	UNPIVOT
+		(Cost FOR Cost_Type IN
+			(ACTUAL_LABOR_COST
+			,ACTUAL_MACHINE_COST
+			,ACTUAL_MATERIAL_COST
+			,ACTUAL_OVERHEAD_COST)
+			)As upvt)
+
+SELECT
+	a.FINANCIAL_SUMMARY_COST_ID
+	,a.Cost_Type as ActualCostType
+	,a.Cost As ActualCost
+	,b.Cost_Type As BudgetCostType
+	,b.Cost As BudgetCost
+	,a.BaseCost
+	,a.ReportEndMonth
+	,a.ReportEndYear
+	,a.SALES_CLASS_DESC As 'Sales Class'
+	,a.LOCATION_NAME As 'Location'
+	,a.MANUFACTURER As Manufacturer
+	,a.MACHINE_MODEL As 'Machine Model'
+FROM actual a
+	Join budget b ON a.FINANCIAL_SUMMARY_COST_ID = b.FINANCIAL_SUMMARY_COST_ID And a.BaseCost = b.BaseCost
+									</code>
+								</pre>
+							</figure>
 						</section>
 
 					</div>
@@ -99,6 +236,7 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script src="assets/js/prism.js"></script>
 
 	</body>
 </html>
